@@ -4,79 +4,51 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define COMPROBAR 1 //Comprobar estructura (0/1)
-
-void H0(){
-    printf("H0\n");
-    sleep(30);
-    return;
+void f0(){
+printf("MI pid es %d\n",getpid());
+sleep(10);
 }
 
-void N0(){
-    printf("N0\n");
-    sleep(30);
-    return;
-}
+void main(){
+//declaracion de variables
+int i;
+pid_t pidh, wpidh;
+pid_t pidn, wpidn;
 
-void N1(){
-    printf("N1\n");
-    sleep(30);
-    return;
-}
+//zona de codigo principal
+for(i=0;i<4;i++){
 
-void N2(){
-    printf("N2\n");
-    sleep(30);
-    return;
-}
-
-int main(){
-    int i,j;
-    pid_t pidH, wpidH;
-    pid_t pidN, wpidN;
+    //codigo del hijo
+    pidh=fork();
+    if(pidh<0) exit(-1);
     
-    for(i=0;i<4;i++){
-        pidH = fork();
-        if(pidH == 0){
-            switch(i){
-                case 0:
-                    H0();
-                    exit(0);
-                default:
-                    pidN = fork();
-                    if(pidN == 0){
-                        switch(i){
-                            case 1:
-                                N0();
-                                exit(0);
-                            case 2:
-                                N1();
-                                exit(0);
-                            case 3:
-                                N2();
-                                exit(0);
-                        }
-                    }
-                    else if(pidN <0) 
-                        exit(1);
-                    else{
-                        wpidN = wait(NULL);
-                        exit(0);
-                    }
+    if(pidh==0){
+        
+        if(i==0){
+            f0();
+            exit(0);
+        } 
+        
+        else{
+            
+            pidn=fork(); 
+            if(pidn<0) exit(-1);
+            //codigo del nieto
+            
+            if (pidn==0){
+                f0();
+                exit(0);
             }
-        }
-        else if(pidH < 0)
-            exit(1);
+            
+            //Esperar al nieto
+            wpidn = wait(NULL);
+            exit(0);
+        }    
     }
-
-    if(COMPROBAR){
-        system("pstree -G | grep ejecutable");
-        system("killall ejecutable");
-        exit(0);
-    }
-
-    for(i=0;i<4;i++)
-        wpidH =wait(NULL);
-
+}
+//Esperar al hijo
+for(i=0;i<4;i++){
+    wpidh=wait(NULL);
     exit(0);
+}
 }
