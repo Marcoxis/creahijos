@@ -4,51 +4,49 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-void f0(){
-printf("MI pid es %d\n",getpid());
-sleep(10);
+void f0() {
+    printf("MI pid es %d\n", getpid());
+    sleep(10);
 }
 
-void main(){
-//declaracion de variables
-int i;
-pid_t pidh, wpidh;
-pid_t pidn, wpidn;
+void main() {
+    // Declaración de variables
+    int i;
+    pid_t pidh, wpidh;
+    pid_t pidn, wpidn;
 
-//zona de codigo principal
-for(i=0;i<4;i++){
+    // Zona de código principal
+    for (i = 0; i < 4; i++) {
+        // Código del hijo
+        pidh = fork();
+        if (pidh < 0)
+            exit(-1);
 
-    //codigo del hijo
-    pidh=fork();
-    if(pidh<0) exit(-1);
-    
-    if(pidh==0){
-        
-        if(i==0){
-            f0();
-            exit(0);
-        } 
-        
-        else{
-            
-            pidn=fork(); 
-            if(pidn<0) exit(-1);
-            //codigo del nieto
-            
-            if (pidn==0){
+        if (pidh == 0) {
+            if (i == 0) {
                 f0();
                 exit(0);
+            } else {
+                pidn = fork();
+                if (pidn < 0)
+                    exit(-1);
+                // Código del nieto
+
+                if (pidn == 0) {
+                    f0();
+                    exit(0);
+                }
+
+                // Esperar al nieto
+                wpidn = wait(NULL);
+                exit(0);
             }
-            
-            //Esperar al nieto
-            wpidn = wait(NULL);
-            exit(0);
-        }    
+        }
     }
-}
-//Esperar al hijo
-for(i=0;i<4;i++){
-    wpidh=wait(NULL);
-    exit(0);
-}
+
+    // Esperar al hijo
+    for (i = 0; i < 4; i++) {
+        wpidh = wait(NULL);
+        exit(0);
+    }
 }
